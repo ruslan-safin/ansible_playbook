@@ -1,0 +1,19 @@
+---
+
+- name: Pull image
+  command: docker compose pull
+  args:
+    chdir: "{{ filebrowser_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Up image
+  command: docker compose up -d
+  args:
+    chdir: "{{ filebrowser_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Restart filebrowser
+  service:
+    name: docker-compose@filebrowser
+    state: restarted
+  when: not ansible_check_mode

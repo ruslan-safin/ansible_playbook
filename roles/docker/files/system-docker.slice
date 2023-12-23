@@ -1,0 +1,6 @@
+[Slice]
+CPUAccounting=yes
+CPUWeight=110
+IOAccounting=yes
+IOWeight=110
+MemoryAccounting=yes

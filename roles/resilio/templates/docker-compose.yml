@@ -1,0 +1,27 @@
+version: "3.3"
+services:
+
+  resilio-sync:
+    image: ${RESILIO_IMAGE}
+    container_name: resilio-sync
+    volumes:
+      - ${RESILIO_DATA}:/mnt/sync
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.resilio.middlewares=secHeaders@file, GeoIP@file"
+      - "traefik.http.routers.resilio.rule=Host(`${RESILIO_HOST}`)"
+      - "traefik.http.routers.resilio.entrypoints=websecure"
+      - "traefik.http.routers.resilio.tls=true"
+      - "traefik.http.routers.resilio.tls.certresolver=LetsEncrypt"
+      - "traefik.http.routers.resilio.service=resilio"
+      - "traefik.http.services.resilio.loadbalancer.server.port=8888"
+      - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+#      - ${RESILIO_WEBUI}:8888
+      - ${RESILIO_PORT}:55555
+    restart: unless-stopped
+
+networks:
+  default:
+      name: traefik-proxy
+      external: true

@@ -1,0 +1,48 @@
+---
+
+- name: Mkdir for wireguard
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0o750"
+  with_items:
+    - "{{ wireguard_service_dir }}"
+
+- name: Mkdir for wireguard config
+  file:
+    state: directory
+    mode: "0o755"
+    path: "{{ wireguard_service_dir }}/{{ item }}"
+  loop:
+    - "{{ wg_data }}"
+  tags:
+    - config
+
+- name: Copy dot.env file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: dot.env.j2
+    dest: "{{ wireguard_service_dir }}/.env"
+    mode: "0o640"
+  no_log: true
+  notify:
+    - Restart wireguard
+
+- name: Copy docker-compose file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: docker-compose.yml
+    dest: "{{ wireguard_service_dir }}"
+    mode: "0o640"
+  notify:
+    - Pull image
+    - Up image
+    - Restart wireguard
+  tags:
+    - docker_compose
+
+- name: Start and enable wireguard
+  service:
+    name: docker-compose@wireguard
+    state: started
+    enabled: true

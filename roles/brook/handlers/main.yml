@@ -1,0 +1,19 @@
+---
+
+- name: Pull image
+  command: docker compose pull
+  args:
+    chdir: "{{ brook_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Up image
+  command: docker compose up -d
+  args:
+    chdir: "{{ brook_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Restart brook
+  service:
+    name: docker-compose@brook
+    state: restarted
+  when: not ansible_check_mode

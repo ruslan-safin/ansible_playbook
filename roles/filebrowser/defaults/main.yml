@@ -1,0 +1,7 @@
+---
+
+filebrowser_image: filebrowser/filebrowser
+filebrowser_data: ./data
+filebrowser_db: ./filebrowser.db
+filebrowser_json: ./filebrowser.json
+filebrowser_host:

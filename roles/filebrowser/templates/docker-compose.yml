@@ -1,0 +1,24 @@
+version: '3.3'
+
+services:
+
+  filebrowser:
+    image: {{ filebrowser_image }}
+    volumes:
+      - {{ filebrowser_data }}:/srv 
+      - {{ filebrowser_db }}:/database/filebrowser.db 
+      - {{ filebrowser_json }}:/.filebrowser.json 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.filebrowser.middlewares=secHeaders@file, GeoIP@file"
+      - "traefik.http.routers.filebrowser.rule=Host(`{{ filebrowser_host }}`)"
+      - "traefik.http.routers.filebrowser.entrypoints=websecure"
+      - "traefik.http.routers.filebrowser.tls=true"
+      - "traefik.http.routers.filebrowser.tls.certresolver=LetsEncrypt"
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: always
+
+networks:
+  default:
+      name: traefik-proxy
+      external: true

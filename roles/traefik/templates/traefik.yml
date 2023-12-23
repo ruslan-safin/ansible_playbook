@@ -1,0 +1,429 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false  # true by default
+
+# (Optional) Log information
+# ---
+#log:
+#  level: ERROR  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+#    format: common  # common, json, logfmt
+#    filePath: /var/log/traefik/traefik.log
+
+# (Optional) Accesslog
+# ---
+accesslog:
+  format: json  # common, json, logfmt
+  filePath: /var/log/traefik/access_log.json
+  fields:
+    defaultMode: keep
+    headers:
+      defaultMode: keep
+
+# (Optional) Enable API and Dashboard
+# ---
+#api:
+#  dashboard: true  # true by default
+#  insecure: false  # Don't do this in production!
+
+# Entry Points configuration
+# ---
+entryPoints:
+  web:
+    address: :80
+    # (Optional) Redirect to HTTPS
+    # ---
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: :443
+
+# Configure your CertificateResolver here...
+# ---
+certificatesResolvers:
+  LetsEncrypt:
+    acme:
+      tlschallenge: {}
+      email: {{ traefik_cert_email }}
+      storage: /etc/traefik/acme.json
+#
+#   production:
+#     acme:
+#       email: your-email@example.com
+#       storage: /etc/traefik/certs/acme.json
+#       caServer: "https://acme-v02.api.letsencrypt.org/directory"
+#       httpChallenge:
+#         entryPoint: web
+
+# Optional Plugins here...
+# ---
+experimental:
+  plugins:
+    GeoBlock:
+      modulename: github.com/PascalMinder/GeoBlock
+      version: v0.2.2
+
+providers:
+  docker:
+    exposedByDefault: false   # Default is true
+    watch: true
+  file:
+    # watch for dynamic configuration changes
+    directory: /etc/traefik
+    watch: true
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - TLS_AES_128_GCM_SHA256
+        - TLS_AES_256_GCM_SHA384
+        - TLS_CHACHA20_POLY1305_SHA256
+      curvePreferences:
+        - CurveP521
+        - CurveP384
+      sniStrict: true
+#  certificates:
+#    - certFile: /traefik/ssl/cert.crt
+#      keyFile: /traefik/ssl/cert.key
+#      stores:
+#        - default
+#  stores:
+#    default:
+#      defaultCertificate:
+#        certFile: /traefik/ssl/cert.crt
+#        keyFile: /traefik/ssl/cert.key
+
+http:
+#    routers:
+#        api:
+#            rule: Host(`dashboard.url`)
+#            entrypoints: websecure
+#            service: api@internal
+#            middlewares:
+#                - "auth"
+#                - "secHeaders"
+#            tls:
+#                certResolver: "LetsEncrypt"
+
+#        webapp:
+#            rule: "Host(`webapp.local`) && !HeadersRegexp(`User-Agent`, `Postman*`)"
+#            entrypoints: websecure
+#            service: backend-service
+#            tls:
+#                certResolver: "LetsEncrypt"
+#            middlewares:
+#                - "GeoIP"
+#                - "rateLimit"
+#                - "secHeaders"
+
+#    services:
+#        backend-service:
+#            loadBalancer:
+#                serversTransport: mytransport
+#                servers:
+#                    - url: "https://backend.url"
+
+#    serversTransports:
+#        mytransport:
+#            insecureSkipVerify: true
+
+    middlewares:
+        auth:
+            digestAuth:
+                users:
+                    - {{ traefik_digestauth_user }}
+
+        secHeaders:
+            headers:
+                browserXssFilter: true
+                contentTypeNosniff: true
+                frameDeny: true
+                sslRedirect: true
+                stsIncludeSubdomains: true
+                stsPreload: true
+                stsSeconds: 15768000
+                customFrameOptionsValue: "sameorigin"
+
+
+        rateLimit:
+            rateLimit:
+                average: 1
+                period: 1s
+                burst: 5
+# r = average / period (100 requests per minute)
+
+        GeoIP:
+            plugin:
+                GeoBlock:
+                    allowLocalRequests: true
+                    logLocalRequests: true
+                    logAllowedRequests: true
+                    logApiRequests: true
+                    api: "https://get.geojs.io/v1/ip/country/{ip}"
+                    apiTimeoutMs: 750                                 # optional
+                    cacheSize: 15
+                    forceMonthlyUpdate: true
+                    allowUnknownCountries: false
+                    unknownCountryApiResponse: "nil"
+                    countries:
+                        - AF # Afghanistan
+                        - AL # Albania
+                        - DZ # Algeria
+                        - AS # American Samoa
+                        - AD # Andorra
+                        - AO # Angola
+                        - AI # Anguilla
+                        - AQ # Antarctica
+                        - AG # Antigua and Barbuda
+                        - AR # Argentina
+                        - AM # Armenia
+                        - AW # Aruba
+                        - AU # Australia
+                        - AT # Austria
+                        - AZ # Azerbaijan
+                        - BS # Bahamas (the)
+                        - BH # Bahrain
+                        - BD # Bangladesh
+                        - BB # Barbados
+                        - BY # Belarus
+                        - BE # Belgium
+                        - BZ # Belize
+                        - BJ # Benin
+                        - BM # Bermuda
+                        - BT # Bhutan
+                        - BO # Bolivia (Plurinational State of)
+                        - BQ # Bonaire, Sint Eustatius and Saba
+                        - BA # Bosnia and Herzegovina
+                        - BW # Botswana
+                        - BV # Bouvet Island
+                        - BR # Brazil
+                        - IO # British Indian Ocean Territory (the)
+                        - BN # Brunei Darussalam
+                        - BG # Bulgaria
+                        - BF # Burkina Faso
+                        - BI # Burundi
+                        - CV # Cabo Verde
+                        - KH # Cambodia
+                        - CM # Cameroon
+                        - CA # Canada
+                        - KY # Cayman Islands (the)
+                        - CF # Central African Republic (the)
+                        - TD # Chad
+                        - CL # Chile
+                        - CN # China
+                        - CX # Christmas Island
+                        - CC # Cocos (Keeling) Islands (the)
+                        - CO # Colombia
+                        - KM # Comoros (the)
+                        - CD # Congo (the Democratic Republic of the)
+                        - CG # Congo (the)
+                        - CK # Cook Islands (the)
+                        - CR # Costa Rica
+                        - HR # Croatia
+                        - CU # Cuba
+                        - CW # Curaçao
+                        - CY # Cyprus
+                        - CZ # Czechia
+                        - CI # Côte d'Ivoire
+                        - DK # Denmark
+                        - DJ # Djibouti
+                        - DM # Dominica
+                        - DO # Dominican Republic (the)
+                        - EC # Ecuador
+                        - EG # Egypt
+                        - SV # El Salvador
+                        - GQ # Equatorial Guinea
+                        - ER # Eritrea
+                        - EE # Estonia
+                        - SZ # Eswatini
+                        - ET # Ethiopia
+                        - FK # Falkland Islands (the) [Malvinas]
+                        - FO # Faroe Islands (the)
+                        - FJ # Fiji
+                        - FI # Finland
+                        - FR # France
+                        - GF # French Guiana
+                        - PF # French Polynesia
+                        - TF # French Southern Territories (the)
+                        - GA # Gabon
+                        - GM # Gambia (the)
+                        - GE # Georgia
+                        - DE # Germany
+                        - GH # Ghana
+                        - GI # Gibraltar
+                        - GR # Greece
+                        - GL # Greenland
+                        - GD # Grenada
+                        - GP # Guadeloupe
+                        - GU # Guam
+                        - GT # Guatemala
+                        - GG # Guernsey
+                        - GN # Guinea
+                        - GW # Guinea-Bissau
+                        - GY # Guyana
+                        - HT # Haiti
+                        - HM # Heard Island and McDonald Islands
+                        - VA # Holy See (the)
+                        - HN # Honduras
+                        - HK # Hong Kong
+                        - HU # Hungary
+                        - IS # Iceland
+                        - IN # India
+                        - ID # Indonesia
+                        - IR # Iran (Islamic Republic of)
+                        - IQ # Iraq
+                        - IE # Ireland
+                        - IM # Isle of Man
+                        - IL # Israel
+                        - IT # Italy
+                        - JM # Jamaica
+                        - JP # Japan
+                        - JE # Jersey
+                        - JO # Jordan
+                        - KZ # Kazakhstan
+                        - KE # Kenya
+                        - KI # Kiribati
+                        - KP # Korea (the Democratic People's Republic of)
+                        - KR # Korea (the Republic of)
+                        - KW # Kuwait
+                        - KG # Kyrgyzstan
+                        - LA # Lao People's Democratic Republic (the)
+                        - LV # Latvia
+                        - LB # Lebanon
+                        - LS # Lesotho
+                        - LR # Liberia
+                        - LY # Libya
+                        - LI # Liechtenstein
+                        - LT # Lithuania
+                        - LU # Luxembourg
+                        - MO # Macao
+                        - MG # Madagascar
+                        - MW # Malawi
+                        - MY # Malaysia
+                        - MV # Maldives
+                        - ML # Mali
+                        - MT # Malta
+                        - MH # Marshall Islands (the)
+                        - MQ # Martinique
+                        - MR # Mauritania
+                        - MU # Mauritius
+                        - YT # Mayotte
+                        - MX # Mexico
+                        - FM # Micronesia (Federated States of)
+                        - MD # Moldova (the Republic of)
+                        - MC # Monaco
+                        - MN # Mongolia
+                        - ME # Montenegro
+                        - MS # Montserrat
+                        - MA # Morocco
+                        - MZ # Mozambique
+                        - MM # Myanmar
+                        - NA # Namibia
+                        - NR # Nauru
+                        - NP # Nepal
+                        - NL # Netherlands (the)
+                        - NC # New Caledonia
+                        - NZ # New Zealand
+                        - NI # Nicaragua
+                        - NE # Niger (the)
+                        - NG # Nigeria
+                        - NU # Niue
+                        - NF # Norfolk Island
+                        - MP # Northern Mariana Islands (the)
+                        - NO # Norway
+                        - OM # Oman
+                        - PK # Pakistan
+                        - PW # Palau
+                        - PS # Palestine, State of
+                        - PA # Panama
+                        - PG # Papua New Guinea
+                        - PY # Paraguay
+                        - PE # Peru
+                        - PH # Philippines (the)
+                        - PN # Pitcairn
+                        - PL # Poland
+                        - PT # Portugal
+                        - PR # Puerto Rico
+                        - QA # Qatar
+                        - MK # Republic of North Macedonia
+                        - RO # Romania
+                        - RU # Russian Federation (the)
+                        - RW # Rwanda
+                        - RE # Réunion
+                        - BL # Saint Barthélemy
+                        - SH # Saint Helena, Ascension and Tristan da Cunha
+                        - KN # Saint Kitts and Nevis
+                        - LC # Saint Lucia
+                        - MF # Saint Martin (French part)
+                        - PM # Saint Pierre and Miquelon
+                        - VC # Saint Vincent and the Grenadines
+                        - WS # Samoa
+                        - SM # San Marino
+                        - ST # Sao Tome and Principe
+                        - SA # Saudi Arabia
+                        - SN # Senegal
+                        - RS # Serbia
+                        - SC # Seychelles
+                        - SL # Sierra Leone
+                        - SG # Singapore
+                        - SX # Sint Maarten (Dutch part)
+                        - SK # Slovakia
+                        - SI # Slovenia
+                        - SB # Solomon Islands
+                        - SO # Somalia
+                        - ZA # South Africa
+                        - GS # South Georgia and the South Sandwich Islands
+                        - SS # South Sudan
+                        - ES # Spain
+                        - LK # Sri Lanka
+                        - SD # Sudan (the)
+                        - SR # Suriname
+                        - SJ # Svalbard and Jan Mayen
+                        - SE # Sweden
+                        - CH # Switzerland
+                        - SY # Syrian Arab Republic
+                        - TW # Taiwan (Province of China)
+                        - TJ # Tajikistan
+                        - TZ # Tanzania, United Republic of
+                        - TH # Thailand
+                        - TL # Timor-Leste
+                        - TG # Togo
+                        - TK # Tokelau
+                        - TO # Tonga
+                        - TT # Trinidad and Tobago
+                        - TN # Tunisia
+                        - TR # Turkey
+                        - TM # Turkmenistan
+                        - TC # Turks and Caicos Islands (the)
+                        - TV # Tuvalu
+                        - UG # Uganda
+                        - UA # Ukraine
+                        - AE # United Arab Emirates (the)
+                        - GB # United Kingdom of Great Britain and Northern Ireland (the)
+                        - UM # United States Minor Outlying Islands (the)
+                        - US # United States of America (the)
+                        - UY # Uruguay
+                        - UZ # Uzbekistan
+                        - VU # Vanuatu
+                        - VE # Venezuela (Bolivarian Republic of)
+                        - VN # Viet Nam
+                        - VG # Virgin Islands (British)
+                        - VI # Virgin Islands (U.S.)
+                        - WF # Wallis and Futuna
+                        - EH # Western Sahara
+                        - YE # Yemen
+                        - ZM # Zambia
+                        - ZW # Zimbabwe
+                        - AX # Åland Islands
+
+###############################################################################################
+####################################### END of THE file #######################################
+###############################################################################################

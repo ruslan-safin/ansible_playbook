@@ -1,0 +1,7 @@
+---
+
+brook_version: latest
+brook_tcp_port: 9000
+brook_udp_port: 9000
+brook_password:
+brook_host:

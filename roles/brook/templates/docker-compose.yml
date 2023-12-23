@@ -1,0 +1,27 @@
+version: "3.3"
+services:
+
+  brook:
+    image: teddysun/brook:{{ brook_version }}
+    container_name: brook
+    ports:
+      - "{{ brook_tcp_port }}:9000/tcp"
+      - "{{ brook_udp_port }}:9000/udp"
+    environment:
+      - ARGS=wsserver -l :9000 -p ${BROOK_PASSWORD}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brook.middlewares=secHeaders@file"
+      - "traefik.http.routers.brook.rule=Host(`{{ brook_host }}`)"
+      - "traefik.http.routers.brook.entrypoints=websecure"
+      - "traefik.http.routers.brook.tls=true"
+      - "traefik.http.routers.brook.tls.certresolver=LetsEncrypt"
+      - "traefik.http.routers.brook.service=brook"
+      - "traefik.http.services.brook.loadbalancer.server.port=9000"
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: always
+
+networks:
+  default:
+    name: traefik-proxy
+    external: true

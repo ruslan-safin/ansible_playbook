@@ -1,0 +1,48 @@
+---
+
+- name: Mkdir for shadowsocks
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0o750"
+  with_items:
+    - "{{ shadowsocks_service_dir }}"
+
+- name: Copy config file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: config.json
+    dest: "{{ shadowsocks_service_dir }}/"
+    mode: "0o640"
+  no_log: true
+  notify:
+    - Restart shadowsocks
+
+- name: Copy dot.env file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: dot.env.j2
+    dest: "{{ shadowsocks_service_dir }}/.env"
+    mode: "0o640"
+  no_log: true
+  notify:
+    - Restart shadowsocks
+
+- name: Copy docker-compose file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: docker-compose.yml
+    dest: "{{ shadowsocks_service_dir }}"
+    mode: "0o640"
+  notify:
+    - Pull image
+    - Up image
+    - Restart shadowsocks
+  tags:
+    - docker_compose
+
+- name: Start and enable shadowsocks
+  service:
+    name: docker-compose@shadowsocks
+    state: started
+    enabled: true

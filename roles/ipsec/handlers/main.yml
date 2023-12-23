@@ -1,0 +1,19 @@
+---
+
+- name: Pull image
+  command: docker compose pull
+  args:
+    chdir: "{{ ipsec_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Up image
+  command: docker compose up -d
+  args:
+    chdir: "{{ ipsec_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Restart ipsec
+  service:
+    name: docker-compose@ipsec
+    state: restarted
+  when: not ansible_check_mode

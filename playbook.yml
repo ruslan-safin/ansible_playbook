@@ -1,0 +1,78 @@
+---
+
+- name: Server prepare
+  hosts: all
+  become: true
+  gather_facts: true
+  order: sorted
+  serial: 50
+  roles:
+    - {role: apt, tags: [apt]}
+    - {role: docker, tags: [docker]}
+    - {role: watchtower, tags: [watchtower]}
+    - {role: traefik, tags: [traefik]}
+  tags:
+    - common
+
+- name: Setup brook
+  hosts: brook
+  become: true
+  gather_facts: false
+  roles:
+    - role: brook
+      tags: 
+        - brook
+
+- name: Setup filebrowser
+  hosts: filebrowser
+  become: true
+  gather_facts: false
+  roles:
+    - role: filebrowser
+      tags:
+        - filebrowser
+
+- name: Setup ipsec
+  hosts: ipsec
+  become: true
+  gather_facts: false
+  roles:
+    - role: ipsec
+      tags:
+        - ipsec
+
+- name: Setup nextcloud
+  hosts: nextcloud
+  become: true
+  gather_facts: false
+  roles:
+    - role: nextcloud
+      tags:
+        - nextcloud
+
+- name: Setup resilio
+  hosts: resilio
+  become: true
+  gather_facts: false
+  roles:
+    - role: resilio
+      tags:
+        - resilio
+
+- name: Setup shadowsocks
+  hosts: shadowsocks
+  become: true
+  gather_facts: false
+  roles:
+    - role: shadowsocks
+      tags:
+        - shadowsocks
+
+- name: Setup wireguard
+  hosts: wireguard
+  become: true
+  gather_facts: false
+  roles:
+    - role: wireguard
+      tags:
+        - wireguard

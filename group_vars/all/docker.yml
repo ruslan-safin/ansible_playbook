@@ -1,0 +1,2 @@
+# Directories
+service_compose_directory: "/etc/docker/compose"

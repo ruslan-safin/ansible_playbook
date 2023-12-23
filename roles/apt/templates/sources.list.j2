@@ -1,0 +1,5 @@
+{{ ansible_managed | comment }}
+
+{% for repo in apt_repos %}
+{{ repo }}
+{% endfor %}

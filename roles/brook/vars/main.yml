@@ -1,0 +1,3 @@
+---
+
+brook_service_dir: "{{ service_compose_directory }}/brook"

@@ -1,0 +1,19 @@
+---
+
+- name: Pull image
+  command: docker compose pull
+  args:
+    chdir: "{{ traefik_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Up image
+  command: docker compose up -d --remove-orphans --force-recreate
+  args:
+    chdir: "{{ traefik_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Restart traefik
+  service:
+    name: docker-compose@traefik
+    state: restarted
+  when: not ansible_check_mode

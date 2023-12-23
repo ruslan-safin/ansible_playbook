@@ -1,0 +1,43 @@
+---
+
+- name: Configure base repositories
+  template:
+    mode: "0o644"
+    owner: root
+    group: root
+    src: sources.list.j2
+    dest: /etc/apt/sources.list
+
+- name: Additional packages for apt
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    cache_valid_time: 180
+
+- name: Apt Update Cache and Upgrade all Packages
+  apt:
+    name: "*"
+    state: present
+    update_cache: true
+
+- name: Upgrade the OS (apt-get dist-upgrade)
+  apt:
+    upgrade: dist
+    update_cache: true
+
+- name: Full upgrade the OS (apt-get full-upgrade)
+  apt:
+    upgrade: full
+    update_cache: true
+
+- name: Remove useless packages from the cache
+  apt:
+    autoclean: true
+
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: true

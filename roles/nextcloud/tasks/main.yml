@@ -1,0 +1,59 @@
+---
+
+- name: Mkdir for nextcloud
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0o750"
+  with_items:
+    - "{{ nextcloud_service_dir }}"
+
+- name: Nextcloud config directories
+  file:
+    state: directory
+    mode: "0o755"
+    path: "{{ nextcloud_service_dir }}/{{ item }}"
+  loop:
+    - "{{ nextcloud_volume }}"
+    - "{{ mariadb_volume }}"
+    - "{{ redis_volume }}"
+  tags:
+    - config
+
+- name: Copy config file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: nginx.conf
+    dest: "{{ nextcloud_service_dir }}"
+    mode: "0o640"
+  notify:
+    - Restart nextcloud
+
+- name: Copy dot.env file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: dot.env.j2
+    dest: "{{ nextcloud_service_dir }}/.env"
+    mode: "0o640"
+  no_log: true
+  notify:
+    - Restart nextcloud
+
+- name: Copy docker-compose file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: docker-compose.yml
+    dest: "{{ nextcloud_service_dir }}"
+    mode: "0o640"
+  notify:
+    - Pull image
+    - Up image
+    - Restart nextcloud
+  tags:
+    - docker_compose
+
+- name: Start and enable nextcloud
+  service:
+    name: docker-compose@nextcloud
+    state: started
+    enabled: true

@@ -1,0 +1,12 @@
+[Unit]
+Description=Docker cleanup timer
+
+[Timer]
+Unit=docker-cleanup.service
+OnUnitInactiveSec=12h
+RandomizedDelaySec=3h
+OnBootSec=0
+OnStartupSec=0
+
+[Install]
+WantedBy=timers.target

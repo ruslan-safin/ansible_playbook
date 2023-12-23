@@ -1,0 +1,8 @@
+---
+
+shadowsocks_encryption_method:
+shadowsocks_password:
+tcp_port: 8388
+udp_port: 8388
+shadowsocks_config: ./config.json
+shadowsocks_image: ghcr.io/shadowsocks/ssserver-rust:latest

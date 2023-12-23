@@ -1,0 +1,45 @@
+all:
+  hosts:
+    server1:
+    server2:
+  children:
+    servers_group_name:
+      hosts:
+        server1:
+          ansible_user: "root"
+          ansible_port: 22
+          # ansible_host: 127.0.0.2
+        server2:
+          ansible_user: "root"
+          ansible_port: 22
+          # ansible_host: 127.0.0.1
+    prod:
+      children:
+        servers_group_name:
+      hosts:
+        server1:
+    test:
+      children:
+        brook:
+          hosts:
+            server2:
+        filebrowser:
+          hosts:
+            server2:
+        ipsec:
+          hosts:
+            server2:
+        nextcloud:
+          hosts:
+            server2:
+        resilio:
+          hosts:
+            server2:
+        shadowsocks:
+          hosts:
+            server2:
+        wireguard:
+          hosts:
+            server2:
+      hosts:
+        server2:

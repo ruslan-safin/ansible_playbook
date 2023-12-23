@@ -1,0 +1,45 @@
+---
+
+- name: Mkdir for filebrowser
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0o750"
+  with_items:
+    - "{{ filebrowser_service_dir }}"
+
+- name: Ensure config file exists
+  file:
+    path: "{{ filebrowser_service_dir }}/{{ item }}"
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+    mode: "0o755"
+  loop:
+    - filebrowser.db
+
+- name: Copy config file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: filebrowser.json
+    dest: "{{ filebrowser_service_dir }}"
+    mode: "0o640"
+
+- name: Copy docker-compose file
+  ignore_errors: "{{ ansible_check_mode }}"
+  template:
+    src: docker-compose.yml
+    dest: "{{ filebrowser_service_dir }}"
+    mode: "0o640"
+  notify:
+    - Pull image
+    - Up image
+    - Restart filebrowser
+  tags:
+    - docker_compose
+
+- name: Start and enable filebrowser
+  service:
+    name: docker-compose@filebrowser
+    state: started
+    enabled: true

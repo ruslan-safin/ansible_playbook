@@ -1,0 +1,3 @@
+---
+
+filebrowser_service_dir: "{{ service_compose_directory }}/filebrowser"

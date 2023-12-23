@@ -1,0 +1,7 @@
+---
+
+resilio_image: resilio/sync
+resilio_data: ./resilio
+resilio_webui: 8888
+resilio_port: 55555
+resilio_host:

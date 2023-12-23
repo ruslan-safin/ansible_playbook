@@ -1,0 +1,143 @@
+---
+
+- name: Remove old compose
+  apt:
+    name:
+      - docker
+      - docker-engine
+      - docker-compose
+      - docker.io
+      - containerd
+      - runc
+    purge: true
+    state: absent
+  notify:
+    - Remove useless packages from the cache
+    - Remove dependencies that are no longer required
+
+- name: Add Docker official GPG key to Debian
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+- name: Setup the repository for Debian
+  apt_repository:
+    repo: deb https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Install docker-ce (with compose plugin)
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+    install_recommends: false
+    state: present
+    update_cache: true
+
+- name: Creating directory for docker composes
+  file:
+    path: /etc/docker/compose
+    state: directory
+    mode: "0o770"
+    owner: root
+    group: docker
+  tags:
+    - config
+
+- name: Copy systemd files
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  loop:
+    - docker-cleanup.service
+    - docker-cleanup.timer
+    - docker-compose@.service
+  notify:
+    - Reload systemd
+  tags:
+    - config_timer
+
+- name: Cleanup timer service
+  service:
+    name: docker-cleanup.timer
+    enabled: true
+  tags:
+    - config
+
+- name: Systemd config directories
+  file:
+    state: directory
+    mode: "0o755"
+    path: "{{ item }}"
+  loop:
+    - /etc/systemd/system/docker.service.d
+    - /etc/systemd/system/containerd.service.d
+    - /etc/systemd/system/user.slice.d
+  tags:
+    - config
+
+- name: Configure slices
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0o644"
+    owner: root
+    group: root
+  loop:
+    - dest: /etc/systemd/system/system-docker.slice
+      src: system-docker.slice
+
+    - dest: /etc/systemd/system/system-containerd.slice
+      src: system-containerd.slice
+
+    - dest: /etc/systemd/system/docker.service.d/slice.conf
+      src: docker-service-slice.conf
+
+    - dest: /etc/systemd/system/containerd.service.d/slice.conf
+      src: containerd-service-slice.conf
+
+    - dest: /etc/systemd/system/user.slice.d/limits.conf
+      src: user-slice-limits.conf
+  notify:
+    - Reload systemd
+    - Restart system-docker.slice
+    - Restart system-containerd.slice
+  tags:
+    - config
+
+- name: Render /etc/default/docker
+  template:
+    dest: /etc/default/docker
+    src: docker-defaults.j2
+    mode: "0o640"
+    owner: root
+    group: docker
+  notify:
+    - Reload docker
+  tags:
+    - config
+
+- name: Start and enable service
+  service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Create a network
+  docker_network:
+    name: traefik-proxy
+
+- name: Flush_handlers
+  meta: flush_handlers
+
+- name: Ensure docker service is started
+  service:
+    name: docker
+    state: started
+    enabled: true
+  ignore_errors: "{{ ansible_check_mode }}"

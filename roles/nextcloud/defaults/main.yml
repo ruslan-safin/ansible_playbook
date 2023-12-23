@@ -1,0 +1,28 @@
+---
+
+nextcloud_admin_user:
+nextcloud_admin_password:
+
+nextcloud_redis_host: redis
+
+nextcloud_trusted_domains:
+nextcloud_trusted_proxies: "172.29.0.0/16"
+
+nextcloud_mysql_root_password:
+nextcloud_mysql_password:
+nextcloud_mysql_database: nextcloud
+nextcloud_mysql_user: nextcloud
+nextcloud_mysql_host: mariadb
+nextcloud_sqlite_database: owncloud
+
+nextcloud_volume: ./nextcloud
+nextcloud_mariadb_volume: ./mariadb
+nextcloud_redis_volume: ./redis
+
+nextcloud_image: nextcloud:fpm-alpine
+nextcloud_mariadb_image: mariadb
+nextcloud_redis_image: redis:alpine
+nextcloud_nginx_image: nginx:alpine
+
+nextcloud_host:
+nextcloud_exposed: true

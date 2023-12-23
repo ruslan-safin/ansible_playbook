@@ -1,0 +1,19 @@
+version: "3.3"
+services:
+
+  shadowsocks:
+    image: ${SHADOWSOCKS_IMAGE}
+    container_name: shadowsocks
+    ports:
+      - "${TCP_PORT}:8388/tcp"
+      - "${UDP_PORT}:8388/udp"
+    volumes:
+      - ${SHADOWSOCKS_CONFIG}:/etc/shadowsocks-rust/config.json
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: always
+
+networks:
+  default:
+    name: traefik-proxy
+    external: true

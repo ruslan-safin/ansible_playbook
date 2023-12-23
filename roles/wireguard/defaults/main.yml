@@ -1,0 +1,9 @@
+---
+
+wg_image: ghcr.io/wg-easy/wg-easy
+wg_host:
+wg_pass:
+wg_port: 51820
+wg_default_dns: 1.1.1.1,8.8.8.8,1.0.0.1,8.8.4.4
+wg_allowed_ips: 0.0.0.0/0
+wg_data: ./wireguard

@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+
+  traefik:
+    image: {{ traefik_image }}
+    container_name: traefik
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - {{ traefik_logs }}:/var/log/traefik:rw
+      - {{ traefik_conf }}:/etc/traefik
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  default:
+      name: traefik-proxy
+      external: true

@@ -1,0 +1,7 @@
+---
+
+traefik_image: traefik
+traefik_logs: ./logs
+traefik_conf: ./conf
+traefik_cert_email:
+traefik_digestauth_user:

@@ -1,0 +1,19 @@
+---
+
+- name: Pull image
+  command: docker compose pull
+  args:
+    chdir: "{{ resilio_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Up image
+  command: docker compose up -d
+  args:
+    chdir: "{{ resilio_service_dir }}"
+  when: not ansible_check_mode
+
+- name: Restart resilio
+  service:
+    name: docker-compose@resilio
+    state: restarted
+  when: not ansible_check_mode

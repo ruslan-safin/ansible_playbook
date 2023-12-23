@@ -1,0 +1,40 @@
+---
+
+- name: Remove useless packages from the cache
+  apt:
+    autoclean: true
+  when: not ansible_check_mode
+
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: true
+  when: not ansible_check_mode
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  when: not ansible_check_mode
+
+- name: Restart system-containerd.slice
+  service:
+    name: system-containerd.slice
+    state: restarted
+  when: not ansible_check_mode
+
+- name: Restart system-docker.slice
+  service:
+    name: system-docker.slice
+    state: restarted
+  when: not ansible_check_mode
+
+- name: Restart docker
+  service:
+    name: docker
+    state: restarted
+  when: not ansible_check_mode
+
+- name: Reload docker
+  service:
+    name: docker
+    state: reloaded
+  when: not ansible_check_mode
