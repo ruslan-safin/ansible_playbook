@@ -1,5 +1,4 @@
 # Ansible roles and playbooks for HomeLab (Nextcloud, Resilio, WireGuard, ShadowSocks, Traefik, IPsec, FileBrowser, Brook, Docker)
-============
 
 ## Requirements:
 * MacOS or Linux
@@ -43,7 +42,7 @@ ansible-playbook playbook.yml -l test --vault-pass-file ./pass
 ansible-playbook -i hosts.yml playbook.yml --ask-vault-pass
 ```
 
-Enjoy your self-hosted file sharing service.
+Enjoy your self-hosted services.
 
 Who do I talk to?
 
